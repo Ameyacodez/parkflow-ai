@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import os
 import folium
-from streamlit_folium import st_folium
 from folium.plugins import HeatMap
 
 st.set_page_config(page_title="ParkFlow AI", layout="wide")
@@ -17,7 +16,8 @@ if not os.path.exists(processed_file):
     st.error("❌ Processed file missing.")
     st.info("Execute `python src/train_pipeline.py` via your terminal to build data models first.")
 else:
-    df = pd.read_csv(processed_file)
+    # Read the data (Using a safe top row limit to prevent memory constraints on the free tier)
+    df = pd.read_csv(processed_file, nrows=1000)
 
     st.sidebar.header("🕹️ Filter Options")
     selected_hour = st.sidebar.slider("Hour of Day (24h)", 0, 23, 5)
@@ -43,7 +43,9 @@ else:
         if heat_data:
             HeatMap(heat_data, radius=25, blur=15, max_zoom=13).add_to(m)
         
-        st_folium(m, width=700, height=500, returned_objects=[])
+        # FAST CLOUD RENDERING FIX: Render map as static HTML instead of using st_folium
+        map_html = m._repr_html_()
+        st.components.v1.html(map_html, height=500)
 
     with col2:
         st.subheader("⚠️ Clear-Zone Dispatch Priorities")
