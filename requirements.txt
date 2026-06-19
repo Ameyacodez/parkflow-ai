@@ -5,3 +5,4 @@ folium
 xgboost
 matplotlib
 streamlit
+streamlit-folium
